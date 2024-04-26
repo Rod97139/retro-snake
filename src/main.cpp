@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <iostream>
 #include <deque>
+#include <raymath.h>
 
 using namespace std;
 
@@ -10,9 +11,21 @@ Color darkGreen = {43, 51, 24, 255};
 int cellSize = 30;
 int cellCount = 25;
 
+double lastUpdateTime = 0;
+
+bool eventTriggered(double interval) {
+    double currentTime = GetTime();
+    if (currentTime - lastUpdateTime >= interval) {
+        lastUpdateTime = currentTime;
+        return true;
+    }
+    return false;
+}
+
 class Snake {
     public:
         deque<Vector2> body = {Vector2{6, 9}, Vector2{5, 9}, Vector2{4, 9}};
+        Vector2 direction = Vector2{1, 0};
 
         void Draw() {
             for (unsigned int i = 0; i < body.size(); i++) {
@@ -21,6 +34,12 @@ class Snake {
                 Rectangle segment = Rectangle{x*cellSize, y*cellSize, (float)cellSize, (float)cellSize};
                 DrawRectangleRounded(segment, 0.5, 6, darkGreen);
             }
+        }
+
+        void Update() {
+            body.pop_back();
+            body.push_front(Vector2Add(body[0], direction));
+            
         }
 };
 
@@ -54,7 +73,7 @@ class Food {
 
 int main()
 {
-    cout<<"Hello World"<<endl;
+    cout<<"Starting the game..."<<endl;
     InitWindow(cellSize*cellCount, cellSize*cellCount, "Retro Snake Game");
     SetTargetFPS(60);
 
@@ -64,6 +83,11 @@ int main()
     while (WindowShouldClose() == false)
     {
         BeginDrawing();
+
+        if (eventTriggered(0.2))
+        {
+            snake.Update();
+        }
 
         //Drawing
         ClearBackground(green);
